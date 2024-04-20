@@ -9,17 +9,28 @@ const highScoreText = document.getElementById("highScore");
 const gridSize = 20;
 var snake = [{ x: 10, y: 10 }];
 var food = generateFood();
-var direction = "right";
+var direction = "right"; //initial direction
+var directionQueue = null; //next direction
+
 var gameInterval;
 var gameSpeedDelay = 200; //100ms
 var gameStarted = false;
 var highScore = 0;
+
+var speedUp = generateSpeedUp();
+var checkbox = document.getElementById("collisionCheckSetting");
+
+var collisionCheckSetting = null;
+checkbox.addEventListener("change", function () {
+  collisionCheckSetting = checkbox.checked;
+});
 
 //draw the game board
 function draw() {
   gameBoard.innerHTML = "";
   drawSnake();
   drawFood();
+  drawSpeedUp();
   updateScore();
 }
 
@@ -54,6 +65,19 @@ function drawFood() {
     gameBoard.appendChild(foodElement);
   }
 }
+function drawSpeedUp() {
+  if (gameStarted) {
+    const speedUpElement = createGameElement("div", "speedUp");
+    setPosition(speedUpElement, speedUp);
+    gameBoard.appendChild(speedUpElement);
+  }
+}
+
+function generateSpeedUp() {
+  const x = Math.floor(Math.random() * gridSize + 1);
+  const y = Math.floor(Math.random() * gridSize + 1);
+  return { x, y };
+}
 
 //generate a random position for the food
 function generateFood() {
@@ -65,6 +89,8 @@ function generateFood() {
 //move the snake
 function move() {
   const head = { ...snake[0] }; //spread operator is called to create a new object
+  direction = directionQueue || direction; //if directionQueue is null, use the current direction
+  directionQueue = null; //reset the directionQueue
   switch (direction) {
     case "right":
       head.x++;
@@ -80,30 +106,30 @@ function move() {
       break;
   }
   snake.unshift(head); //add head object to the beginning of the snake array
+
   if (head.x === food.x && head.y === food.y) {
     food = generateFood();
-    increaseSpeed();
-    clearInterval(gameInterval); //clear past interval
-    gameInterval = setInterval(() => {
-      move(); //move the snake
-      checkCollision(); //check for collision
-      draw(); //draw the game board
-    }, gameSpeedDelay);
+    changeGameSpeed(-10);
+    setGameLoop();
+  } else if (head.x === speedUp.x && head.y === speedUp.y) {
+    speedUp = generateSpeedUp();
+    changeGameSpeed(+5);
+    setGameLoop();
+    snake.pop(); //remove the last element of the snake array
   } else {
     snake.pop(); //remove the last element of the snake array
   }
 }
 
-function increaseSpeed() {
-  gameSpeedDelay -= 10;
+function changeGameSpeed(delay) {
   if (gameSpeedDelay > 150) {
-    gameSpeedDelay -= 5;
+    gameSpeedDelay += delay;
   } else if (gameSpeedDelay > 100) {
-    gameSpeedDelay -= 3;
+    gameSpeedDelay += delay / 2;
   } else if (gameSpeedDelay > 50) {
-    gameSpeedDelay -= 2;
+    gameSpeedDelay += delay / 3;
   } else if (gameSpeedDelay > 25) {
-    gameSpeedDelay -= 1;
+    gameSpeedDelay += delay / 4;
   }
   console.log(gameSpeedDelay);
 }
@@ -113,11 +139,7 @@ function startGame() {
   gameStarted = true; //set game started to true
   logo.style.display = "none"; //hide the logo
   instructionText.style.display = "none"; //hide the instruction text
-  gameInterval = setInterval(() => {
-    move(); //move the snake
-    checkCollision(); //check for collision
-    draw(); //draw the game board
-  }, gameSpeedDelay);
+  setGameLoop(); //start the game loop
 }
 
 //keypress event listener
@@ -128,35 +150,51 @@ function handleKeyPress(event) {
   ) {
     startGame();
   }
+  let newDirection = null;
   switch (event.key) {
     case "ArrowUp":
-      if (direction !== "down") direction = "up";
+      if (direction !== "down") newDirection = "up";
       break;
     case "ArrowDown":
-      if (direction !== "up") direction = "down";
+      if (direction !== "up") newDirection = "down";
       break;
     case "ArrowLeft":
-      if (direction !== "right") direction = "left";
+      if (direction !== "right") newDirection = "left";
       break;
     case "ArrowRight":
-      if (direction !== "left") direction = "right";
+      if (direction !== "left") newDirection = "right";
       break;
   }
+
+  directionQueue = newDirection;
 }
 
 document.addEventListener("keydown", handleKeyPress);
 
 function checkCollision() {
   const head = snake[0];
-
-  if (head.x < 1 || head.x > gridSize || head.y < 1 || head.y > gridSize) {
-    gameOver();
+  if (collisionCheckSetting === null || collisionCheckSetting === false) {
+    if (head.x < 1 || head.x > gridSize || head.y < 1 || head.y > gridSize) {
+      gameOver();
+    }
+  } else {
+    if (head.x < 1) {
+      head.x = 20;
+    } else if (head.x > 20) {
+      head.x = 1;
+    }
+    if (head.y < 1) {
+      head.y = 20;
+    } else if (head.y > 20) {
+      head.y = 1;
+    }
   }
   for (let i = 1; i < snake.length; i++) {
     if (head.x === snake[i].x && head.y === snake[i].y) {
       gameOver();
     }
   }
+  console.log(collisionCheckSetting);
 }
 
 //game over
@@ -165,6 +203,7 @@ function gameOver() {
   stopGame();
   snake = [{ x: 10, y: 10 }];
   food = generateFood();
+  speedUp = generateSpeedUp();
   direction = "right";
   gameSpeedDelay = 200;
   updateScore();
@@ -192,4 +231,13 @@ function updateHighScore() {
     highScoreText.textContent = currentScore.toString().padStart(3, "0");
   }
   highScoreText.style.display = "block";
+}
+
+function setGameLoop() {
+  clearInterval(gameInterval);
+  gameInterval = setInterval(() => {
+    move(); //move the snake
+    checkCollision(); //check for collision
+    draw(); //draw the game board
+  }, gameSpeedDelay);
 }
