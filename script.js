@@ -7,7 +7,7 @@ const highScoreText = document.getElementById("highScore");
 
 //game variables
 const gridSize = 20;
-var snake = [{ x: 10, y: 10 }];
+var snake = null;
 var food = generateFood();
 var direction = "right"; //initial direction
 var directionQueue = null; //next direction
@@ -17,8 +17,12 @@ var gameSpeedDelay = 200; //100ms
 var gameStarted = false;
 var highScore = 0;
 
-var speedUp = generateSpeedUp();
+var slowFood = generateSlowFood();
 var checkbox = document.getElementById("collisionCheckSetting");
+
+//sounds
+var slowSound = new Audio("/assets/audio/slow.wav");
+var foodSound = new Audio("/assets/audio/food.wav");
 
 var collisionCheckSetting = null;
 checkbox.addEventListener("change", function () {
@@ -30,7 +34,7 @@ function draw() {
   gameBoard.innerHTML = "";
   drawSnake();
   drawFood();
-  drawSpeedUp();
+  drawSlowFood();
   updateScore();
 }
 
@@ -65,15 +69,15 @@ function drawFood() {
     gameBoard.appendChild(foodElement);
   }
 }
-function drawSpeedUp() {
+function drawSlowFood() {
   if (gameStarted) {
-    const speedUpElement = createGameElement("div", "speedUp");
-    setPosition(speedUpElement, speedUp);
-    gameBoard.appendChild(speedUpElement);
+    const slowFoodElement = createGameElement("div", "slowFood");
+    setPosition(slowFoodElement, slowFood);
+    gameBoard.appendChild(slowFoodElement);
   }
 }
 
-function generateSpeedUp() {
+function generateSlowFood() {
   const x = Math.floor(Math.random() * gridSize + 1);
   const y = Math.floor(Math.random() * gridSize + 1);
   return { x, y };
@@ -111,10 +115,12 @@ function move() {
     food = generateFood();
     changeGameSpeed(-10);
     setGameLoop();
-  } else if (head.x === speedUp.x && head.y === speedUp.y) {
-    speedUp = generateSpeedUp();
+    foodSound.play();
+  } else if (head.x === slowFood.x && head.y === slowFood.y) {
+    slowFood = generateSlowFood();
     changeGameSpeed(+5);
     setGameLoop();
+    slowSound.play();
     snake.pop(); //remove the last element of the snake array
   } else {
     snake.pop(); //remove the last element of the snake array
@@ -131,11 +137,11 @@ function changeGameSpeed(delay) {
   } else if (gameSpeedDelay > 25) {
     gameSpeedDelay += delay / 4;
   }
-  console.log(gameSpeedDelay);
 }
 
 //Start game
 function startGame() {
+  snake = [{ x: 10, y: 10 }];
   gameStarted = true; //set game started to true
   logo.style.display = "none"; //hide the logo
   instructionText.style.display = "none"; //hide the instruction text
@@ -194,7 +200,6 @@ function checkCollision() {
       gameOver();
     }
   }
-  console.log(collisionCheckSetting);
 }
 
 //game over
@@ -203,7 +208,7 @@ function gameOver() {
   stopGame();
   snake = [{ x: 10, y: 10 }];
   food = generateFood();
-  speedUp = generateSpeedUp();
+  slowFood = generateSlowFood();
   direction = "right";
   gameSpeedDelay = 200;
   updateScore();

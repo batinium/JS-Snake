@@ -76,7 +76,7 @@ body,
   border: #999 5px solid;
 }
 
-.speedUp {
+.slowFood {
   background-color: #ff5e00;
   border: #5a5a5a 5px solid;
 }
@@ -93,7 +93,7 @@ body,
 }
 
 .foodLegendContainer,
-.speedupLegendContainer {
+.slowFoodLegendContainer {
   display: flex;
   flex-direction: row;
 }
@@ -105,7 +105,7 @@ body,
   margin-top: 10px;
 }
 
-.speedupLegendContainer .speedUp {
+.slowFoodLegendContainer .slowFood {
   width: 20px;
   height: 20px;
   margin-left: 10px;
