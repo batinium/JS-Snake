@@ -13,7 +13,7 @@ This is a simple snake game made with HTML, CSS and plain Javascript. The game i
 
 ![Snake Game](/snake-preview.png)
 
-### Special thanks to [Freecodecamp](https://www.youtube.com/channel/UC5DNytAJ6_FISueUfzZCVsw) for the tutorial on how to make this game.
+### Special thanks to [Freecodecamp](https://www.youtube.com/watch?v=uyhzCBEGaBY) for the tutorial on how to make this game.
 
 ```
 
