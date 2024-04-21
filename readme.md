@@ -1,6 +1,6 @@
 # Retro Snake Game
 
-This is a simple snake game made with HTML, CSS and Javascript. The game is played on a 20x20 grid and the snake grows by one cell each time it eats the food. The game ends when the snake collides with the walls or itself.
+This is a simple snake game made with HTML, CSS and plain Javascript. The game is played on a 20x20 grid and the snake grows by one cell each time it eats the food. The game ends when the snake collides with the walls or itself.
 
 ## How to play
 
